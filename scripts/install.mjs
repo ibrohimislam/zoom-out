@@ -25,7 +25,7 @@
 //   --home <dir>               Home directory to install into (default: $HOME)
 //   --root <dir>               Project root (default: cwd)
 //   --list                     Show the surface matrix and exit
-//   --matrix                   Print the README compatibility matrix and exit
+//   --matrix                   Print the compatibility matrix (docs/compatibility.md)
 //   --dry-run                  Print planned writes without touching disk
 //   --uninstall                Remove what this script installed
 //   --force                    Overwrite unmanaged rule files

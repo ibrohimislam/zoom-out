@@ -170,12 +170,12 @@ test("the portable plugin manifest satisfies the Agent Plugins schema", () => {
   assert.equal(claude.version, pkg.version);
 });
 
-test("the README compatibility matrix matches the registry", () => {
-  // The table is user-facing documentation of the same data the installer
+test("the compatibility doc matrix matches the registry", () => {
+  // The table is the maintainer-facing inventory of the same data the installer
   // acts on; letting them drift is how docs start lying.
-  const readme = readFileSync(join(REPO, "README.md"), "utf8");
-  const block = /<!-- matrix:begin[^>]*-->\n([\s\S]*?)\n<!-- matrix:end -->/.exec(readme);
-  assert.ok(block, "README must carry the generated matrix block");
+  const doc = readFileSync(join(REPO, "docs", "compatibility.md"), "utf8");
+  const block = /<!-- matrix:begin[^>]*-->\n([\s\S]*?)\n<!-- matrix:end -->/.exec(doc);
+  assert.ok(block, "docs/compatibility.md must carry the generated matrix block");
   const expected = execFileSync(process.execPath, [INSTALLER, "--matrix"], {
     encoding: "utf8",
   }).trim();
