@@ -1,6 +1,6 @@
 {
   "name": "zoom-out",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Claude Code, pi, and omp plugin: forces a Hypothesis Ledger with a mandatory zoom-out hypothesis before any bug fix, root-cause diagnosis, or plan is called done.",
   "license": "MIT",

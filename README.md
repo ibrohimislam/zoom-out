@@ -69,8 +69,10 @@ pin a ref (`git:github.com/ibrohimislam/zoom-out@v1.2.0`) if you want stability.
 
 Neither pi nor omp reads Claude Code's `hooks/hooks.json`, so the reflex there
 comes from `hooks/zoom-out-reflex.ts`, declared through
-`package.json#omp.extensions` and `package.json#pi.extensions`. It queues one
-hidden custom message (`deliverAs: "nextTurn"`) on `session_start`.
+`package.json#omp.extensions` and `package.json#pi.extensions`. It returns one
+hidden custom message from `before_agent_start` — once per session, checked
+against the transcript — so the reflex is attached to the prompt that triggers
+it rather than queued behind it.
 
 ### As a bare skill (no injection)
 
