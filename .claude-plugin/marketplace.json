@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "zoom-out",
+  "description": "Is this the whole thing, or one expression of something bigger? A skill that blocks narrow fixes before you call them done.",
+  "owner": {
+    "name": "Ibrohim Kholilul Islam",
+    "url": "https://github.com/ibrohimislam"
+  },
+  "plugins": [
+    {
+      "name": "zoom-out",
+      "description": "Forces a Hypothesis Ledger with a mandatory non-local (zoom-out) hypothesis before any bug fix, root-cause diagnosis, or plan is declared complete.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

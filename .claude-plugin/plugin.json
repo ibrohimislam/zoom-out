@@ -1,0 +1,9 @@
+{
+  "name": "zoom-out",
+  "version": "1.0.0",
+  "description": "Blocks narrow fixes: forces a Hypothesis Ledger with a mandatory zoom-out hypothesis before any bug fix, root-cause diagnosis, or plan is called done.",
+  "author": {
+    "name": "Ibrohim Kholilul Islam",
+    "url": "https://github.com/ibrohimislam"
+  }
+}
