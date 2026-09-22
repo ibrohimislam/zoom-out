@@ -22,13 +22,14 @@ pattern. The evidence was often already in earlier tool output — a grep, an
 orientation dump, a design doc — just not acted on because it didn't look
 relevant to the one spot being chased.
 
-Description-based skill triggering alone is unreliable for this. Hence the skill
-ships with a `SessionStart` hook that injects the reflex once per session, so the
-check happens even when the skill never gets invoked.
+Description-based skill triggering alone is unreliable for this. Hence the repo
+ships an injection that delivers the reflex once per session, so the check happens
+even when the skill never gets invoked — a `SessionStart` hook for Claude Code and
+an extension entry for omp.
 
 ## Install
 
-### As a plugin (recommended — includes the hook)
+### Claude Code (plugin — includes the hook)
 
 ```bash
 claude plugin marketplace add ibrohimislam/zoom-out
@@ -38,7 +39,24 @@ claude plugin install zoom-out@zoom-out
 Or from inside a session: `/plugin marketplace add ibrohimislam/zoom-out`, then
 `/plugin install zoom-out@zoom-out`.
 
-### As a bare skill (no hook)
+### omp / oh-my-pi (plugin — includes the reflex injection)
+
+The same catalog works for omp, which reads `.claude-plugin/marketplace.json` as
+its Claude-compatible fallback:
+
+```bash
+omp plugin marketplace add ibrohimislam/zoom-out
+omp plugin install zoom-out@zoom-out
+```
+
+Or inside a session: `/marketplace add ibrohimislam/zoom-out`, then
+`/marketplace install zoom-out@zoom-out`.
+
+omp does not read Claude Code's `hooks/hooks.json`, so the reflex there comes from
+`hooks/zoom-out-reflex.mjs`, declared through `package.json#omp.extensions`. It
+queues one hidden custom message (`deliverAs: "nextTurn"`) on `session_start`.
+
+### As a bare skill (no injection)
 
 Copy the skill directory:
 
@@ -47,7 +65,10 @@ mkdir -p ~/.claude/skills
 cp -r skills/zoom-out ~/.claude/skills/
 ```
 
-Or, for a single project, copy it to `.claude/skills/zoom-out/` in that repo.
+Or, for a single project, copy it to `.claude/skills/zoom-out/` in that repo. omp
+discovers the same directory through its Claude provider, or natively at
+`~/.omp/agent/skills/zoom-out/` (also one level under any `skills.customDirectories`
+entry).
 
 ### Other agents
 
@@ -111,11 +132,14 @@ The skill defines a protocol, not a report:
 
 ```
 .claude-plugin/
-  plugin.json         # plugin manifest (name, version, author)
-  marketplace.json    # lets this repo be added as a marketplace
+  plugin.json         # Claude plugin manifest (name, version, author)
+  marketplace.json    # catalog; omp reads this as its Claude-compatible fallback
+package.json          # omp.extensions manifest -> the omp reflex injection
 hooks/
-  hooks.json          # SessionStart -> the reflex injection
+  reflex.txt          # the reflex text (single source of truth)
+  hooks.json          # Claude SessionStart -> the reflex injection
   zoom-out-session-start.js
+  zoom-out-reflex.mjs # omp extension entry: same reflex, queued per session
 skills/
   zoom-out/SKILL.md   # the skill itself
 ```

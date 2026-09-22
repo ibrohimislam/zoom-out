@@ -6,6 +6,8 @@
 // Contract: read the hook JSON on stdin, write one JSON object to stdout with
 // `hookSpecificOutput.additionalContext`, exit 0. A per-session marker file in
 // tmpdir keeps it to a single injection per session.
+//
+// The message text lives in ./reflex.txt (shared with the omp extension entry).
 "use strict";
 
 const fs = require("node:fs");
@@ -30,13 +32,7 @@ function sessionId(raw) {
   return `ppid${process.ppid}`;
 }
 
-const MESSAGE =
-  "Zoom-out reflex (see the zoom-out skill for the full protocol): before " +
-  "calling a bug fix, root-cause diagnosis, or plan complete, ask once - is " +
-  "what I just touched the whole thing, or one expression of something " +
-  'bigger? Check what earlier tool output already said before searching ' +
-  'again. If the answer is "something bigger", its scope is the deliverable, ' +
-  "not the original narrow instance.";
+const MESSAGE = fs.readFileSync(path.join(__dirname, "reflex.txt"), "utf8").trim();
 
 // Keep the marker name filesystem-safe; session ids come from hook input.
 const id = sessionId(readStdin()).replace(/[^A-Za-z0-9_-]/g, "_");
