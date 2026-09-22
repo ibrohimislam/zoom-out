@@ -71,6 +71,22 @@ test("the body stays inside the progressive-disclosure budget", () => {
   assert.ok(lines < 500, `SKILL.md body is ${lines} lines; the spec recommends under 500`);
   assert.ok(body.includes("Hypothesis Ledger"), "the ledger is the point of the skill");
   assert.ok(body.includes("zoom-out"), "the zoom-out hypothesis is the point of the skill");
+  // The concepts, not the headings: headings may be renamed, but losing any
+  // of these lets the discipline stop at the diagnosis while the deliverable
+  // ships at instance scope.
+  const concepts = {
+    "the zoom-out hypothesis must name its class concretely": "the larger class",
+    "scope escalation": "its scope\nbecomes the deliverable",
+    "the budget rule fences narrowing off from scope": "never on scope",
+    "coverage means the same role, not a selector match": "not just matching it in a selector",
+    "values carried from evidence are scope claims": "every carried value is a scope claim",
+    "a defense of scope is answered by enumeration": "enumerate, don't argue",
+    "skipping the ledger does not skip the deliverable check": "Skipping the ledger does not skip",
+  };
+  for (const [why, phrase] of Object.entries(concepts)) {
+    assert.ok(body.includes(phrase), `missing: ${why} ("${phrase}")`);
+  }
+  assert.ok(!/\bSNR\b/.test(body), "SNR was renamed to information gain; the old term invites pruning coverage");
 });
 
 test("the shipped skill is the only copy — no per-agent duplicates in the repo", () => {

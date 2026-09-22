@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "zoom-out",
-      "description": "Forces a Hypothesis Ledger with a mandatory non-local (zoom-out) hypothesis, 5 Whys with evidence gates, a systems lens, and SNR gates before any bug fix, root-cause diagnosis, or plan is declared complete.",
+      "description": "Forces a Hypothesis Ledger with a mandatory non-local (zoom-out) hypothesis, 5 Whys with evidence gates, a systems lens, and information-gain gates before any bug fix, root-cause diagnosis, or plan is declared complete.",
       "source": "./",
       "category": "productivity"
     }
