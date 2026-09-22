@@ -1,8 +1,15 @@
 # zoom-out
 
-A skill for AI coding agents — [Claude Code](https://claude.com/claude-code),
-[pi](https://github.com/badlogic/pi-mono), and [omp / oh-my-pi](https://github.com/oh-my-pi)
-— that blocks narrow fixes.
+A skill and reflex for AI coding agents — [Claude Code](https://claude.com/claude-code),
+[Codex](https://openai.com/codex/), [GitHub Copilot](https://github.com/features/copilot),
+[Cursor](https://cursor.com/), [Gemini CLI](https://geminicli.com/),
+[Antigravity](https://antigravity.google/), [OpenCode](https://opencode.ai/),
+[Junie](https://junie.jetbrains.com/), [Kiro](https://kiro.dev/),
+[Cline](https://cline.bot/), [Roo Code](https://roocode.com/),
+[Devin Desktop / Windsurf](https://windsurf.com/), [Zed](https://zed.dev/),
+[Amp](https://ampcode.com/), [Goose](https://block.github.io/goose/),
+[Ona](https://ona.com/), [pi](https://github.com/badlogic/pi-mono), and
+[omp / oh-my-pi](https://github.com/oh-my-pi) — that blocks narrow fixes.
 
 A clean explanation that fits the symptom is not a verified explanation of the
 full scope. `zoom-out` forces a **Hypothesis Ledger** before you declare any bug
@@ -24,12 +31,59 @@ pattern. The evidence was often already in earlier tool output — a grep, an
 orientation dump, a design doc — just not acted on because it didn't look
 relevant to the one spot being chased.
 
-Description-based skill triggering alone is unreliable for this. Hence the repo
-ships an injection that delivers the reflex once per session, so the check happens
-even when the skill never gets invoked — a `SessionStart` hook for Claude Code and
-a shared extension entry for pi and omp.
+Description-based skill triggering alone is unreliable for this. Hence every
+agent gets an injection as well as the skill: a `SessionStart` hook for Claude
+Code, a shared extension entry for pi and omp, and an always-on instruction file
+(`AGENTS.md`, `.cursor/rules/*.mdc`, `.github/instructions/*.instructions.md`,
+`GEMINI.md`, steering files) for everyone else.
 
 ## Install
+
+### Any agent (portable installer)
+
+```bash
+node scripts/install.mjs                  # detected agents + the portable standard
+node scripts/install.mjs --agents all     # every agent in the compatibility table
+node scripts/install.mjs --scope project  # commit the surfaces into this repo
+node scripts/install.mjs --list           # what is selected, and where it lands
+node scripts/install.mjs --dry-run        # print planned writes, touch nothing
+node scripts/install.mjs --uninstall      # remove exactly what it installed
+```
+
+The installer renders one source — `hooks/reflex.txt` and `skills/zoom-out/` —
+into each agent's documented discovery paths. It never hand-maintains a copy per
+agent, so a surface cannot drift away from the skill.
+
+Two kinds of surface are written, because agents differ in what they guarantee:
+
+- **skill** — a `SKILL.md` directory the agent discovers and loads on relevance.
+  Portable across the [Agent Skills](https://agentskills.io) standard, but
+  trigger-dependent: the agent has to decide the skill is relevant.
+- **rules** — an always-on instruction file the agent injects into every session
+  regardless of triggering. This is where the reflex is guaranteed rather than
+  hoped for, on agents with no hook API.
+
+Safety properties, all covered by `npm test`:
+
+- **Idempotent** — running it twice changes nothing.
+- **Non-destructive** — shared files such as `AGENTS.md` get a marked managed
+  block; everything around it is preserved, and uninstall restores the file.
+- **Never clobbers** — an existing rule file that this installer did not generate
+  is skipped, with `--force` to override deliberately.
+- **Scoped** — `--agents cursor --scope user` writes only Cursor's user surfaces.
+
+### Codex and Cursor (portable package)
+
+Both read the [Agent Plugins](https://agent-plugins.org) format, so this repo is
+installable straight from git with no marketplace step:
+
+```bash
+codex plugin marketplace add ibrohimislam/zoom-out
+```
+
+For Cursor, add the repository through a team marketplace, or point
+`~/.cursor/plugins/local` at a clone. The package ships the skill; the always-on
+rule for either agent comes from the installer's `--scope project` run.
 
 ### Claude Code (plugin — includes the hook)
 
@@ -65,7 +119,7 @@ pi install git:github.com/ibrohimislam/zoom-out
 
 Use `pi install -l git:...` for project settings (`.pi/settings.json`) instead of
 global, and `pi list` to confirm. Reconciliation on update resets the clone, so
-pin a ref (`git:github.com/ibrohimislam/zoom-out@v1.2.0`) if you want stability.
+pin a ref (`git:github.com/ibrohimislam/zoom-out@v1.3.0`) if you want stability.
 
 Neither pi nor omp reads Claude Code's `hooks/hooks.json`, so the reflex there
 comes from `hooks/zoom-out-reflex.ts`, declared through
@@ -76,26 +130,103 @@ it rather than queued behind it.
 
 ### As a bare skill (no injection)
 
-Copy the skill directory:
-
 ```bash
-mkdir -p ~/.claude/skills
-cp -r skills/zoom-out ~/.claude/skills/
+mkdir -p ~/.agents/skills
+cp -r skills/zoom-out ~/.agents/skills/
 ```
 
-Or, for a single project, copy it to `.claude/skills/zoom-out/` in that repo.
+`~/.agents/skills/` is the portable standard location, read natively by Codex,
+Cursor, Copilot, Antigravity, OpenCode, Junie, Roo Code, Zed, Amp, Goose and
+Devin, and as a documented alias by Gemini CLI. Claude Code and Kiro do not read
+it — use `~/.claude/skills/` and `~/.kiro/skills/`, or just run the installer,
+which writes the right roots for you.
 
-Other discovery roots for the same directory: omp reads it through its Claude
-provider, or natively from `~/.omp/agent/skills/zoom-out/` (also one level under
-any `skills.customDirectories` entry); pi reads it from `~/.pi/agent/skills/`,
-`.pi/skills/`, or `~/.agents/skills/`, or from a `skills` array in its settings —
-including another harness's directory, e.g. `"skills": ["~/.claude/skills"]`.
+## Compatibility
 
-### Other agents
+Coverage target: every coding agent measured at meaningful at-work adoption, plus
+the two open standards everything else conforms to. Regenerate the table with
+`node scripts/install.mjs --matrix`.
 
-`skills/zoom-out/SKILL.md` is plain Markdown with YAML frontmatter (`name`,
-`description`) and no tool dependencies. Any agent that reads Markdown
-instructions can use it, including via a rules file such as `AGENTS.md`.
+<!-- matrix:begin (generated by scripts/install.mjs --matrix) -->
+| Agent | At-work share | Skill discovery root | Always-on surface |
+| --- | --- | --- | --- |
+| Claude Code | 39% | ~/.claude/skills/zoom-out/, .claude/skills/zoom-out/ | SessionStart hook (hooks/hooks.json) — shipped, installed with the plugin |
+| Codex (OpenAI) | 16% | ~/.agents/skills/zoom-out/, ~/.codex/skills/zoom-out/, .agents/skills/zoom-out/, .codex/skills/zoom-out/ | ~/.codex/AGENTS.md, AGENTS.md |
+| GitHub Copilot (VS Code, CLI, cloud agent) | 21% | ~/.agents/skills/zoom-out/, ~/.copilot/skills/zoom-out/, .agents/skills/zoom-out/, .github/skills/zoom-out/ | .github/instructions/zoom-out.instructions.md, .github/copilot-instructions.md |
+| Cursor | 12% | ~/.agents/skills/zoom-out/, ~/.cursor/skills/zoom-out/, .agents/skills/zoom-out/, .cursor/skills/zoom-out/ | .cursor/rules/zoom-out.mdc |
+| Gemini CLI | 6% | ~/.agents/skills/zoom-out/, ~/.gemini/skills/zoom-out/, .agents/skills/zoom-out/, .gemini/skills/zoom-out/ | ~/.gemini/GEMINI.md, GEMINI.md |
+| Google Antigravity (2.0 / CLI / IDE) | 6% | ~/.gemini/config/skills/zoom-out/, ~/.gemini/antigravity-cli/skills/zoom-out/, .agents/skills/zoom-out/ | ~/.gemini/GEMINI.md, AGENTS.md, .agents/rules/zoom-out.md |
+| OpenCode | 7% | ~/.agents/skills/zoom-out/, ~/.config/opencode/skills/zoom-out/, .agents/skills/zoom-out/, .opencode/skills/zoom-out/ | ~/.config/opencode/AGENTS.md, AGENTS.md |
+| JetBrains Junie | 9% | ~/.agents/skills/zoom-out/, ~/.junie/skills/zoom-out/, .agents/skills/zoom-out/, .junie/skills/zoom-out/ | ~/.junie/AGENTS.md |
+| AWS Kiro | — | ~/.kiro/skills/zoom-out/, .kiro/skills/zoom-out/ | ~/.kiro/steering/zoom-out.md, .kiro/steering/zoom-out.md |
+| Cline | — | ~/.cline/skills/zoom-out/, .cline/skills/zoom-out/, .claude/skills/zoom-out/ | ~/.agents/AGENTS.md, .clinerules/zoom-out.md |
+| Roo Code | — | ~/.agents/skills/zoom-out/, ~/.roo/skills/zoom-out/, .agents/skills/zoom-out/, .roo/skills/zoom-out/ | ~/.roo/rules/zoom-out.md, .roo/rules/zoom-out.md |
+| Devin Desktop / Windsurf, Devin CLI | — | ~/.config/devin/skills/zoom-out/, ~/.codeium/windsurf/skills/zoom-out/, .devin/skills/zoom-out/, .windsurf/skills/zoom-out/ | ~/.codeium/windsurf/memories/global_rules.md, .devin/rules/zoom-out.md |
+| Zed | — | ~/.agents/skills/zoom-out/, .agents/skills/zoom-out/ | ~/.config/zed/AGENTS.md |
+| Amp | — | ~/.agents/skills/zoom-out/, ~/.config/amp/skills/zoom-out/, .agents/skills/zoom-out/ | ~/.config/amp/AGENTS.md |
+| Goose | — | ~/.agents/skills/zoom-out/, .agents/skills/zoom-out/ | ~/.config/goose/.goosehints |
+| Ona | — | .agents/skills/zoom-out/, .ona/skills/zoom-out/ | AGENTS.md |
+| pi | — | — | hooks/zoom-out-reflex.ts (before_agent_start) — shipped |
+| omp / oh-my-pi | — | ~/.omp/agent/skills/zoom-out/ | hooks/zoom-out-reflex.ts (before_agent_start) — shipped |
+| Agent Skills / AGENTS.md standard | — | ~/.agents/skills/zoom-out/, .agents/skills/zoom-out/ | AGENTS.md |
+<!-- matrix:end -->
+
+Every path above is taken from the vendor's own documentation, cited per agent in
+`scripts/install.mjs` (the `sources` field of each registry entry). Where a vendor
+documents a compatibility alias for another agent's directory — Cursor reading
+`.claude/skills`, Gemini CLI treating `.agents/skills` as an alias — the alias is
+written too, deliberately: mirrors are cheap, and Cursor has shipped releases
+where an aliased skill appeared in the menu but never reached the prompt.
+
+### What the share column means
+
+The share column is at-work adoption among professional developers, from the
+JetBrains [Developer Ecosystem Survey
+2026](https://blog.jetbrains.com/research/2026/08/ai-coding-agent-adoption-2026/)
+(n=15,509, fielded May–July 2026): Claude Code 39% (47% in the US), GitHub
+Copilot 21%, Codex 16%, Cursor 12%, JetBrains AI/Junie 9%, OpenCode 7%, Google
+Antigravity 6%. The same survey found 90% of professional developers using AI
+coding agents at work at least weekly and 68% daily.
+
+Read those numbers as *usage*, not exclusive share: developers stack tools (the
+Pragmatic Engineer survey of 906 developers found 70% using two to four), so the
+column sums past 100% and no published survey reports the union. That is why the
+target here is stated as *cover every tool that clears the measured threshold,
+plus the standard paths the rest conform to* rather than as one aggregate
+percentage — and why the table carries the two standard rows, which cover the
+long tail (Warp, Aider, Kilo Code, Factory, Augment, TRAE, and the ~40 other
+clients on the [agentskills.io showcase](https://agentskills.io/clients))
+without a row each.
+
+Vendor-disclosed scale, on the same market (IdeaPlan's [September 2026 source
+audit](https://www.ideaplan.io/blog/ai-coding-assistant-market-share-2026)):
+GitHub Copilot 50M total users on 4.7M paid seats, Cursor ~$4B annualized, Claude
+Code $2.5B+ run rate. Those three are measured on different denominators and
+cannot be ranked against each other; the at-work column is the only one measured
+the same way across tools.
+
+### Known gaps, stated rather than implied
+
+- **JetBrains AI Assistant** project rules (`.aiassistant/rules/*.md`) are not
+  written. The rule *type* — including `Always` — is set in the IDE, not in the
+  file, so a file-only drop-in cannot force it. Junie, which shares the JetBrains
+  row in the survey, is covered.
+- **Aider** does not auto-load `AGENTS.md`; it needs `read: AGENTS.md` in
+  `.aider.conf.yml`. The installer does not edit your config files, so this is one
+  line you add yourself.
+- **Antigravity** per-rule activation frontmatter is undocumented, so
+  `.agents/rules/zoom-out.md` is written without frontmatter and the always-on
+  guarantee comes from `GEMINI.md` and root `AGENTS.md`, both of which Antigravity
+  parses at startup.
+- **Gemini CLI** does not read `AGENTS.md` by default (the filename list is
+  configurable), which is why it gets a `GEMINI.md` block instead.
+- **Zed** picks the first existing project instruction file from a fixed list in
+  which `.rules` precedes `AGENTS.md`, so an existing `.rules` wins over the
+  managed block.
+- **Kiro** custom agents do not inherit steering or skills unless their paths are
+  listed in the agent's `resources`.
+- **Warp** is reached through the AGENTS.md standard row; it has no skill
+  directory to install into.
 
 ## How it works
 
@@ -153,16 +284,22 @@ The skill defines a protocol, not a report:
 
 ```
 .claude-plugin/
-  plugin.json         # Claude plugin manifest (name, version, author)
+  plugin.json         # Claude Code manifest (name, version, author)
   marketplace.json    # catalog; omp reads this as its Claude-compatible fallback
+plugin.json           # Agent Plugins 1.0.0 manifest -> Codex + Cursor, from git
 package.json          # omp.extensions + pi manifest -> the shared reflex injection
 hooks/
   reflex.txt          # the reflex text (single source of truth)
   hooks.json          # Claude SessionStart -> the reflex injection
   zoom-out-session-start.js
   zoom-out-reflex.ts  # pi + omp extension entry: same reflex, queued per session
+scripts/
+  install.mjs         # surface registry + installer (skill roots and rule files)
 skills/
   zoom-out/SKILL.md   # the skill itself
+test/
+  install.test.mjs    # installer contract: coverage, idempotency, no clobbering
+  skill.test.mjs      # SKILL.md conformance to the Agent Skills spec
 ```
 
 ## License

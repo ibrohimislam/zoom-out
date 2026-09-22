@@ -1,10 +1,14 @@
 {
   "name": "zoom-out",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "private": true,
-  "description": "Claude Code, pi, and omp plugin: forces a Hypothesis Ledger with a mandatory zoom-out hypothesis before any bug fix, root-cause diagnosis, or plan is called done.",
+  "description": "Claude Code, pi, and omp plugin plus a portable installer: forces a Hypothesis Ledger with a mandatory zoom-out hypothesis before any bug fix, root-cause diagnosis, or plan is called done. Installs into every coding agent's documented discovery surface.",
   "license": "MIT",
-  "keywords": ["pi-package", "claude-code", "oh-my-pi", "skills"],
+  "keywords": ["pi-package", "claude-code", "oh-my-pi", "skills", "agents-md", "agent-skills"],
+  "scripts": {
+    "install:agents": "node scripts/install.mjs",
+    "test": "node --test"
+  },
   "omp": {
     "extensions": ["./hooks/zoom-out-reflex.ts"]
   },

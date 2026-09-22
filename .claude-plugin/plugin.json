@@ -1,6 +1,6 @@
 {
   "name": "zoom-out",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Blocks narrow fixes: forces a Hypothesis Ledger with a mandatory zoom-out hypothesis, 5 Whys with evidence gates, a systems lens, and SNR gates before any bug fix, root-cause diagnosis, or plan is called done.",
   "author": {
     "name": "Ibrohim Kholilul Islam",
