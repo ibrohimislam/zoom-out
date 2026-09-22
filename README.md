@@ -1,6 +1,8 @@
 # zoom-out
 
-A [Claude Code](https://claude.com/claude-code) skill that blocks narrow fixes.
+A skill for AI coding agents — [Claude Code](https://claude.com/claude-code),
+[pi](https://github.com/badlogic/pi-mono), and [omp / oh-my-pi](https://github.com/oh-my-pi)
+— that blocks narrow fixes.
 
 A clean explanation that fits the symptom is not a verified explanation of the
 full scope. `zoom-out` forces a **Hypothesis Ledger** before you declare any bug
@@ -25,7 +27,7 @@ relevant to the one spot being chased.
 Description-based skill triggering alone is unreliable for this. Hence the repo
 ships an injection that delivers the reflex once per session, so the check happens
 even when the skill never gets invoked — a `SessionStart` hook for Claude Code and
-an extension entry for omp.
+a shared extension entry for pi and omp.
 
 ## Install
 
@@ -52,9 +54,23 @@ omp plugin install zoom-out@zoom-out
 Or inside a session: `/marketplace add ibrohimislam/zoom-out`, then
 `/marketplace install zoom-out@zoom-out`.
 
-omp does not read Claude Code's `hooks/hooks.json`, so the reflex there comes from
-`hooks/zoom-out-reflex.mjs`, declared through `package.json#omp.extensions`. It
-queues one hidden custom message (`deliverAs: "nextTurn"`) on `session_start`.
+### pi (package — includes the reflex injection)
+
+pi installs the repo as a package, reading `package.json#pi` for the skill and the
+extension entry:
+
+```bash
+pi install git:github.com/ibrohimislam/zoom-out
+```
+
+Use `pi install -l git:...` for project settings (`.pi/settings.json`) instead of
+global, and `pi list` to confirm. Reconciliation on update resets the clone, so
+pin a ref (`git:github.com/ibrohimislam/zoom-out@v1.2.0`) if you want stability.
+
+Neither pi nor omp reads Claude Code's `hooks/hooks.json`, so the reflex there
+comes from `hooks/zoom-out-reflex.ts`, declared through
+`package.json#omp.extensions` and `package.json#pi.extensions`. It queues one
+hidden custom message (`deliverAs: "nextTurn"`) on `session_start`.
 
 ### As a bare skill (no injection)
 
@@ -65,10 +81,13 @@ mkdir -p ~/.claude/skills
 cp -r skills/zoom-out ~/.claude/skills/
 ```
 
-Or, for a single project, copy it to `.claude/skills/zoom-out/` in that repo. omp
-discovers the same directory through its Claude provider, or natively at
-`~/.omp/agent/skills/zoom-out/` (also one level under any `skills.customDirectories`
-entry).
+Or, for a single project, copy it to `.claude/skills/zoom-out/` in that repo.
+
+Other discovery roots for the same directory: omp reads it through its Claude
+provider, or natively from `~/.omp/agent/skills/zoom-out/` (also one level under
+any `skills.customDirectories` entry); pi reads it from `~/.pi/agent/skills/`,
+`.pi/skills/`, or `~/.agents/skills/`, or from a `skills` array in its settings —
+including another harness's directory, e.g. `"skills": ["~/.claude/skills"]`.
 
 ### Other agents
 
@@ -134,12 +153,12 @@ The skill defines a protocol, not a report:
 .claude-plugin/
   plugin.json         # Claude plugin manifest (name, version, author)
   marketplace.json    # catalog; omp reads this as its Claude-compatible fallback
-package.json          # omp.extensions manifest -> the omp reflex injection
+package.json          # omp.extensions + pi manifest -> the shared reflex injection
 hooks/
   reflex.txt          # the reflex text (single source of truth)
   hooks.json          # Claude SessionStart -> the reflex injection
   zoom-out-session-start.js
-  zoom-out-reflex.mjs # omp extension entry: same reflex, queued per session
+  zoom-out-reflex.ts  # pi + omp extension entry: same reflex, queued per session
 skills/
   zoom-out/SKILL.md   # the skill itself
 ```
